@@ -147,27 +147,13 @@ const useEntityBehaviors = (setEntity: Dispatch<SetStateAction<Object3D>>) => {
 }
 
 export const Player = () => {
-  const [entity, setEntity] = useState<Object3D>(null!)
+  const [, setEntity] = useState<Object3D>(null!)
   useEntityBehaviors(setEntity)
   return (
     <group ref={setEntity}>
-      <pointLight
-        position={[0, 7, 0]}
-        color="rgb(240,190,180)"
-        intensity={1}
-        castShadow
-      />
-      <mesh castShadow name={NAME} position-y={RADIUS}>
+      <mesh castShadow name={NAME} position-y={RADIUS} receiveShadow>
         <sphereBufferGeometry args={[1]} />
-        <meshStandardMaterial
-          roughness={0}
-          onBeforeCompile={shader => {
-            shader.fragmentShader = shader.fragmentShader.replace(
-              "vec4 diffuseColor = vec4( diffuse, opacity );",
-              "vec4 diffuseColor = vec4( vNormal*.5 +.5, opacity );"
-            )
-          }}
-        />
+        <meshStandardMaterial color="white" roughness={0} />
       </mesh>
       <axesHelper args={[3]} position-y={RADIUS} />
     </group>

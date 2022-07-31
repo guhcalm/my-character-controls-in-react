@@ -82,3 +82,6 @@ ethers
 
       }
     }
+
+    Box-projected cubemaps
+    meshnormal material
