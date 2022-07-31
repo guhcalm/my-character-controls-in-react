@@ -1,12 +1,11 @@
 import { useFrame } from "@react-three/fiber"
 import { Dispatch, SetStateAction, useState } from "react"
 import { Mesh, Object3D, Quaternion, Raycaster, Vector2, Vector3 } from "three"
-import { NormalMaterial } from "./NormalMaterial"
 
 const NAME: string = "PLAYER"
 const RADIUS: number = 1
 const GRAVITY: Vector3 = new Vector3(0, -9.8, 0)
-const FRICTION: number = 0.01
+const FRICTION: number = 0.1
 const ACCELERATION: number = 60
 const JUMP: number = 5
 const SPEED: number = 20
@@ -18,42 +17,60 @@ const directions = {
   up: new Vector3(0, 1, 0),
   down: new Vector3(0, -1, 0)
 }
-const inputs = { KeyW: 0, KeyS: 0, KeyA: 0, KeyD: 0, Space: 0 }
+const inputs = {
+  KeyW: 0,
+  KeyS: 0,
+  KeyA: 0,
+  KeyD: 0,
+  Space: 0,
+  ShiftLeft: 0,
+  ShiftRight: 0
+}
 addEventListener("keydown", ({ code }) => (inputs[code] = 1))
 addEventListener("keyup", ({ code }) => (inputs[code] = 0))
 
 const getDirectionInput = (setDirection: Dispatch<SetStateAction<Vector3>>) => {
-  const { KeyW, KeyS, KeyA, KeyD } = inputs
+  const { KeyW, KeyS, KeyA, KeyD, ShiftLeft, ShiftRight } = inputs
+  const factor = ShiftLeft === 1 || ShiftRight === 1 ? 3 : 1
+  const acc = ACCELERATION * factor
   setDirection(direction =>
-    direction.copy(new Vector3(KeyA - KeyD, 0, KeyW - KeyS).normalize())
+    direction.copy(
+      new Vector3(KeyA - KeyD, 0, KeyW - KeyS).normalize().multiplyScalar(acc)
+    )
   )
 }
+
+const getIntersection = (raycaster: Raycaster, scene: Object3D) =>
+  raycaster
+    .intersectObject(scene)
+    .filter(({ object }) => object instanceof Mesh && object.name !== NAME)[0]
+
 const seekCollisions = (
   position: Vector3,
   rotation: Quaternion,
   raycaster: Raycaster,
   scene: Object3D
 ) =>
-  Object.values(directions).map(direction => {
+  Object.entries(directions).map(([name, direction]) => {
     raycaster.near = 0
     raycaster.far = RADIUS
     raycaster.set(
       new Vector3(0, RADIUS, 0).clone().add(position),
       direction.clone().applyQuaternion(rotation)
     )
-    const intersection = raycaster
-      .intersectObject(scene)
-      .filter(({ object }) => object instanceof Mesh && object.name !== NAME)[0]
-    if (!intersection) return { collided: false }
-    return { collided: true, normal: intersection.face?.normal }
+    const intersection = getIntersection(raycaster, scene)
+    if (!intersection) return { collided: false, name }
+    return { collided: true, normal: intersection.face?.normal, name }
   })
 
 const mouse = new Vector2()
-const firstPersonControl = (
+const firstPersonCamera = (
   { x, y }: Vector2,
   position: Vector3,
   setRotation: Dispatch<SetStateAction<Quaternion>>,
-  camera: Object3D
+  camera: Object3D,
+  scene: Object3D,
+  raycaster: Raycaster
 ) =>
   setRotation(rotation => {
     const getRotation = (direction: Vector3, angle: number) =>
@@ -73,6 +90,15 @@ const firstPersonControl = (
         .applyQuaternion(rotateX)
         .add(camera.position)
     )
+
+    raycaster.near = 0
+    raycaster.far = 20
+    const origin = position.clone().add(new Vector3(0, RADIUS, 0))
+    const target = camera.position.clone().sub(origin).normalize()
+    raycaster.set(origin, target)
+    const intersection = getIntersection(raycaster, scene)
+    if (intersection) camera.position.lerp(intersection.point, 0.1)
+
     return rotation.multiply(rotateY)
   })
 
@@ -84,35 +110,33 @@ const useEntityBehaviors = (setEntity: Dispatch<SetStateAction<Object3D>>) => {
   useFrame(({ mouse, scene, camera, raycaster, clock }) => {
     getDirectionInput(setDirection)
     const collisions = seekCollisions(position, rotation, raycaster, scene)
-    const dt = clock.getDelta()
+    const dt = 0.017
     setVelocity(current => {
       current.add(GRAVITY.clone().multiplyScalar(dt))
-      collisions.forEach(
-        ({ collided, normal }) =>
-          collided &&
-          current.add(normal.clone().multiplyScalar(-velocity.dot(normal)))
-      )
-      if (inputs.Space && collisions[5].collided)
-        current.add(directions.up.clone().multiplyScalar(JUMP))
-      current.add(
-        direction
-          .clone()
-          .applyQuaternion(rotation)
-          .multiplyScalar(ACCELERATION * dt)
-      )
+      collisions.forEach(({ collided, normal, name }) => {
+        if (!collided) return
+        current.add(normal.clone().multiplyScalar(-velocity.dot(normal)))
+      })
+      const { collided, normal } = collisions.filter(
+        collision => collision.name === "down"
+      )[0]
+      const dV = direction.clone().applyQuaternion(rotation)
+      if (collided) {
+        dV.applyQuaternion(
+          new Quaternion().setFromUnitVectors(directions.up, normal)
+        )
+        if (inputs.Space)
+          current.add(directions.up.clone().multiplyScalar(JUMP))
+        if (direction.length() === 0) current.multiplyScalar(1 - FRICTION)
+      }
+      current.add(dV.multiplyScalar(dt))
       const horizontal = current.clone().setY(0)
-      if (direction.length() === 0)
-        return current.sub(horizontal.clone().multiplyScalar(FRICTION))
-      if (horizontal.length() > SPEED)
-        return horizontal
-          .clone()
-          .normalize()
-          .multiplyScalar(SPEED)
-          .setY(current.y)
-      return current
+      return horizontal.length() > SPEED
+        ? horizontal.normalize().multiplyScalar(SPEED).setY(current.y)
+        : current
     })
     setPosition(current => current.add(velocity.clone().multiplyScalar(dt)))
-    firstPersonControl(mouse, position, setRotation, camera)
+    firstPersonCamera(mouse, position, setRotation, camera, scene, raycaster)
     setEntity(entity => {
       entity.position.copy(position)
       entity.quaternion.copy(rotation)
@@ -126,13 +150,17 @@ export const Player = () => {
   useEntityBehaviors(setEntity)
   return (
     <group ref={setEntity}>
-      <mesh
-        castShadow
-        material={NormalMaterial}
-        name={NAME}
-        position-y={RADIUS}
-      >
+      <mesh castShadow name={NAME} position-y={RADIUS}>
         <sphereBufferGeometry args={[1]} />
+        <meshStandardMaterial
+          roughness={0}
+          onBeforeCompile={shader => {
+            shader.fragmentShader = shader.fragmentShader.replace(
+              "vec4 diffuseColor = vec4( diffuse, opacity );",
+              "vec4 diffuseColor = vec4( vNormal*.5 +.5, opacity );"
+            )
+          }}
+        />
       </mesh>
       <axesHelper args={[3]} position-y={RADIUS} />
     </group>

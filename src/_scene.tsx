@@ -47,9 +47,6 @@ export const MyScene = () => (
     <Environment />
     <Player />
     <axesHelper args={[30]} />
-    <EffectComposer>
-      <SSR />
-    </EffectComposer>
     <Stats />
   </Canvas>
 )
