@@ -1,5 +1,5 @@
 Arguments: 
-  C:\Program Files\nodejs\node.exe C:\Program Files (x86)\Yarn\bin\yarn.js add -D @types/three @types/postprocessing
+  C:\Program Files\nodejs\node.exe C:\Program Files (x86)\Yarn\bin\yarn.js
 
 PATH: 
   C:\Python310\Scripts\;C:\Python310\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\Program Files\Git\cmd;C:\Program Files (x86)\Yarn\bin\;C:\Program Files\Neovim\/bin;C:\Program Files\PowerShell\7\;C:\Users\guhca\scoop\apps\oh-my-posh\current\bin;C:\Users\guhca\scoop\apps\gcc\current\bin;C:\Users\guhca\scoop\apps\nvm\current\nodejs\nodejs;C:\Users\guhca\scoop\shims;C:\Users\guhca\AppData\Local\Microsoft\WindowsApps;C:\Users\guhca\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\guhca\AppData\Local\Programs\oh-my-posh\bin;C:\Users\guhca\AppData\Local\Yarn\bin
@@ -14,17 +14,12 @@ Platform:
   win32 x64
 
 Trace: 
-  Error: https://registry.yarnpkg.com/@types%2fpostprocessing: Not found
-      at Request.params.callback [as _callback] (C:\Program Files (x86)\Yarn\lib\cli.js:66138:18)
-      at Request.self.callback (C:\Program Files (x86)\Yarn\lib\cli.js:140883:22)
-      at Request.emit (node:events:527:28)
-      at Request.<anonymous> (C:\Program Files (x86)\Yarn\lib\cli.js:141855:10)
-      at Request.emit (node:events:527:28)
-      at IncomingMessage.<anonymous> (C:\Program Files (x86)\Yarn\lib\cli.js:141777:12)
-      at Object.onceWrapper (node:events:641:28)
-      at IncomingMessage.emit (node:events:539:35)
-      at endReadableNT (node:internal/streams/readable:1345:12)
-      at processTicksAndRejections (node:internal/process/task_queues:83:21)
+  SyntaxError: C:\Users\guhca\lab\advanced-threejs\minimal-boilerplate\package.json: Unexpected token } in JSON at position 819
+      at JSON.parse (<anonymous>)
+      at C:\Program Files (x86)\Yarn\lib\cli.js:1625:59
+      at Generator.next (<anonymous>)
+      at step (C:\Program Files (x86)\Yarn\lib\cli.js:310:30)
+      at C:\Program Files (x86)\Yarn\lib\cli.js:321:13
 
 npm manifest: 
   {
@@ -44,14 +39,17 @@ npm manifest:
       "url": "https://github.com/guhcalm/minimal-boilerplate.git"
     },
     "dependencies": {
-      "@react-three/drei": "^9.18.0",
-      "@react-three/fiber": "^8.2.2",
-      "@react-three/postprocessing": "^2.5.5",
       "postprocessing": "^6.28.4",
+  
+      "@react-three/drei": "9.16.0",
+      "@react-three/fiber": "8.0.12",
+      "@react-three/postprocessing": "2.4.6",
+      "@types/three": "0.132.0",
+      "three": "0.142.0",
+  
       "react": "^18.1.0",
       "react-dom": "^18.1.0",
       "styled-components": "^5.3.5",
-      "three": "^0.143.0"
     },
     "devDependencies": {
       "@babel/core": "^7.18.2",
@@ -62,6 +60,7 @@ npm manifest:
       "@types/react": "^18.0.11",
       "@types/react-dom": "^18.0.5",
       "@types/styled-components": "^5.1.25",
+      "@types/three": "^0.143.0",
       "@typescript-eslint/eslint-plugin": "^5.27.0",
       "@typescript-eslint/parser": "^5.27.0",
       "babel-loader": "^8.2.5",
@@ -131,6 +130,9 @@ npm manifest:
         "prettier"
       ],
       "rules": {
+        "no-return-assign": "off",
+        "typescript-eslint/no-shadow": "off",
+        "no-restricted-globals": "off",
         "react/function-component-definition": "off",
         "new-cap": "off",
         "react/react-in-jsx-scope": "off",
@@ -1627,6 +1629,18 @@ Lockfile:
       "@types/hoist-non-react-statics" "*"
       "@types/react" "*"
       csstype "^3.0.2"
+  
+  "@types/three@^0.143.0":
+    version "0.143.0"
+    resolved "https://registry.yarnpkg.com/@types/three/-/three-0.143.0.tgz#686f1221c4c89d797713f0533d2f129afcc3572d"
+    integrity sha512-c5PonXOt8xk5q4ygmyjOX4Ec+FA7gwfdcMT/PveE9xrJs/0DDcf2lJkWrhEcmvx2ZefQCQBcogABnGqB0P4OsA==
+    dependencies:
+      "@types/webxr" "*"
+  
+  "@types/webxr@*":
+    version "0.5.0"
+    resolved "https://registry.yarnpkg.com/@types/webxr/-/webxr-0.5.0.tgz#aae1cef3210d88fd4204f8c33385a0bbc4da07c9"
+    integrity sha512-IUMDPSXnYIbEO2IereEFcgcqfDREOgmbGqtrMpVPpACTU6pltYLwHgVkrnYv0XhWEcjio9sYEfIEzgn3c7nDqA==
   
   "@types/ws@^8.5.1":
     version "8.5.3"

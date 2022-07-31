@@ -15,6 +15,6 @@ geometry.computeVertexNormals()
 
 export const Environment = () => (
   <mesh geometry={geometry} receiveShadow castShadow>
-    <meshStandardMaterial color="#f0f0f0" roughness={1} envMapIntensity={0} />
+    <meshStandardMaterial color="#f0f0f0" roughness={0.9} envMapIntensity={1} />
   </mesh>
 )

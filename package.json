@@ -15,14 +15,16 @@
     "url": "https://github.com/guhcalm/minimal-boilerplate.git"
   },
   "dependencies": {
-    "@react-three/drei": "^9.18.0",
-    "@react-three/fiber": "^8.2.2",
-    "@react-three/postprocessing": "^2.5.5",
     "postprocessing": "^6.28.4",
+
+    "@react-three/drei": "9.16.0",
+    "@react-three/fiber": "8.0.12",
+    "@react-three/postprocessing": "2.4.6",
+    "three": "0.142.0",
+
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
-    "styled-components": "^5.3.5",
-    "three": "^0.143.0"
+    "styled-components": "^5.3.5"
   },
   "devDependencies": {
     "@babel/core": "^7.18.2",

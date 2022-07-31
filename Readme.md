@@ -56,3 +56,29 @@
 
 
     Layer
+
+    Cryptography
+    Key concepts
+    hasing
+    expriptions
+
+    Hash -> chop && mix -> fixed lentgh , return a digest value 
+
+
+Genesis
+ethers
+    Blockchain
+
+    class Block {
+      constructor(index, timestamp, data, previousHash = ") {
+         this.index = index
+         this.timestamp = timestamp
+         this.data = data
+         this.previousHash = previousHash
+         this.hash = ""
+      }
+
+      calculateHash() {
+
+      }
+    }

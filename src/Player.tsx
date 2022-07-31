@@ -151,6 +151,12 @@ export const Player = () => {
   useEntityBehaviors(setEntity)
   return (
     <group ref={setEntity}>
+      <pointLight
+        position={[0, 7, 0]}
+        color="rgb(240,190,180)"
+        intensity={1}
+        castShadow
+      />
       <mesh castShadow name={NAME} position-y={RADIUS}>
         <sphereBufferGeometry args={[1]} />
         <meshStandardMaterial
