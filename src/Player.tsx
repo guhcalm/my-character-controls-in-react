@@ -9,6 +9,7 @@ const FRICTION: number = 0.1
 const ACCELERATION: number = 60
 const JUMP: number = 5
 const SPEED: number = 20
+const dt: number = 0.017
 const directions = {
   front: new Vector3(0, 0, 1),
   back: new Vector3(0, 0, -1),
@@ -60,7 +61,12 @@ const seekCollisions = (
     )
     const intersection = getIntersection(raycaster, scene)
     if (!intersection) return { collided: false, name }
-    return { collided: true, normal: intersection.face?.normal, name }
+    return {
+      collided: true,
+      normal: intersection.face?.normal,
+      point: intersection.point,
+      name
+    }
   })
 
 const mouse = new Vector2()
@@ -90,7 +96,6 @@ const firstPersonCamera = (
         .applyQuaternion(rotateX)
         .add(camera.position)
     )
-
     raycaster.near = 0
     raycaster.far = 20
     const origin = position.clone().add(new Vector3(0, RADIUS, 0))
@@ -107,28 +112,24 @@ const useEntityBehaviors = (setEntity: Dispatch<SetStateAction<Object3D>>) => {
   const [rotation, setRotation] = useState(new Quaternion())
   const [direction, setDirection] = useState(new Vector3())
   const [velocity, setVelocity] = useState(new Vector3())
-  useFrame(({ mouse, scene, camera, raycaster, clock }) => {
+  useFrame(({ mouse, scene, camera, raycaster }) => {
     getDirectionInput(setDirection)
     const collisions = seekCollisions(position, rotation, raycaster, scene)
-    const dt = 0.017
     setVelocity(current => {
       current.add(GRAVITY.clone().multiplyScalar(dt))
-      collisions.forEach(({ collided, normal, name }) => {
+      const dV = direction.clone().applyQuaternion(rotation)
+      collisions.forEach(({ collided, normal, name, point }) => {
         if (!collided) return
         current.add(normal.clone().multiplyScalar(-velocity.dot(normal)))
-      })
-      const { collided, normal } = collisions.filter(
-        collision => collision.name === "down"
-      )[0]
-      const dV = direction.clone().applyQuaternion(rotation)
-      if (collided) {
+        if (name !== "down") return
+        setPosition(current => current.lerp(point, 0.1))
         dV.applyQuaternion(
           new Quaternion().setFromUnitVectors(directions.up, normal)
         )
         if (inputs.Space)
           current.add(directions.up.clone().multiplyScalar(JUMP))
         if (direction.length() === 0) current.multiplyScalar(1 - FRICTION)
-      }
+      })
       current.add(dV.multiplyScalar(dt))
       const horizontal = current.clone().setY(0)
       return horizontal.length() > SPEED
